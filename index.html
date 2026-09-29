@@ -29,9 +29,10 @@ html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;-webkit-text-size-adjust:100%}
 .wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:24px 64px;display:grid;gap:20px}
 header{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px}
-h1{font-family:var(--f-display);font-weight:700;font-size:28px;letter-spacing:-.01em;margin:0}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(22px,6vw,28px);letter-spacing:-.01em;margin:0}
 h1 small{display:block;font-family:var(--f-mono);font-size:12px;font-weight:400;color:var(--muted);letter-spacing:.04em;margin-top:4px}
 .hbtns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{white-space:nowrap}
 .btn{font:inherit;font-weight:500;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:8px 16px;cursor:pointer}
 .btn:hover{border-color:var(--accent)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg)}
@@ -47,7 +48,8 @@ h1 small{display:block;font-family:var(--f-mono);font-size:12px;font-weight:400;
 .stat{padding:14px 16px;border-left:1px solid var(--line);min-width:0}
 .stat:first-child{border-left:0}
 .stat .k{font-size:12px;color:var(--muted);letter-spacing:.04em}
-.stat .v{font-family:var(--f-display);font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat .v{font-family:var(--f-display);font-size:clamp(17px,4.6vw,22px);font-weight:700;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.stat .v small{font-size:12px;font-weight:500;color:var(--muted);display:block}
 .stat .v.warn{color:var(--warn)}
 @media (max-width:560px){.stats{grid-template-columns:1fr 1fr}.stat:nth-child(3){border-left:0}.stat:nth-child(n+3){border-top:1px solid var(--line)}}
 
@@ -63,7 +65,18 @@ textarea{resize:vertical;min-height:120px}
 .check{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ink)}
 .check input{width:auto}
 .actions{display:flex;gap:6px;flex-wrap:wrap}
-.pay{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:10px 14px;border-top:1px solid var(--line);align-items:center}
+.pay{display:grid;grid-template-columns:1fr auto;gap:4px 12px;padding:10px 14px;border-top:1px solid var(--line);align-items:center}
+.claim{display:grid;grid-template-columns:1fr auto;gap:4px 12px;padding:10px 14px;border-top:1px solid var(--line);align-items:center}
+.claim:first-child{border-top:0}
+.claim .d{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.claim .n{font-size:14px}
+.claim .a{font-family:var(--f-mono);font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
+.claim .x{grid-column:2;justify-self:end}
+.bar{height:8px;background:var(--tile);border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink);border-radius:999px}
+.budget{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:grid;gap:8px}
+.budget .big{font-family:var(--f-display);font-size:clamp(20px,6vw,26px);font-weight:700;font-variant-numeric:tabular-nums}
+.budget .row2{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted);flex-wrap:wrap}
 .pay:first-child{border-top:0}
 .pay .d{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
 .pay .n{font-size:14px}
@@ -100,7 +113,7 @@ textarea{resize:vertical;min-height:120px}
 .pill.unpaid{background:var(--warn-soft);color:var(--warn)}
 .empty{background:var(--paper);border:1px dashed var(--line);border-radius:12px;padding:28px 20px;text-align:center;color:var(--muted)}
 .empty b{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
-@media (max-width:480px){.lesson{grid-template-columns:48px 1fr}.right{grid-column:2;justify-items:start;grid-auto-flow:column;align-items:center;justify-content:start}}
+@media (max-width:480px){.lesson{grid-template-columns:44px 1fr}.right{grid-column:2;justify-items:start;grid-auto-flow:column;align-items:center;justify-content:start;flex-wrap:wrap}.pay{grid-template-columns:1fr auto}}
 
 /* sheets */
 .overlay{position:fixed;inset:0;background:rgba(10,14,30,.45);z-index:10;display:flex;align-items:flex-end;justify-content:center}
@@ -179,10 +192,21 @@ textarea{resize:vertical;min-height:120px}
     <div class="status" id="status" role="status"></div>
   </form>
 
+  <section id="claimsec" aria-label="報帳" class="month">
+    <div class="sec-h"><h3>公司報帳</h3><span id="claim-sum"></span></div>
+    <div class="budget">
+      <div class="row2"><span id="budget-label">年度補助 USD 1,000</span><span id="budget-rate"></span></div>
+      <div class="big" id="budget-left"></div>
+      <div class="bar"><i id="budget-bar" style="width:0%"></i></div>
+      <div class="row2"><span id="budget-used"></span><span id="budget-period"></span></div>
+    </div>
+    <div class="list" id="claimlist"></div>
+    <div class="actions"><button class="btn primary small" id="claim-new" type="button">產生報帳明細</button><button class="btn small" id="claim-set" type="button">補助設定</button></div>
+  </section>
   <section id="paysec" aria-label="付款紀錄" class="month">
     <div class="sec-h"><h3>付款紀錄</h3><span id="pay-sum"></span></div>
     <div class="list" id="paylist"></div>
-    <div class="actions"><button class="btn small" id="pay-add" type="button">＋ 記一筆付款</button></div>
+    <div class="actions"><button class="btn small" id="pay-add" type="button">＋ 記一筆付款</button><button class="btn small" id="pay-img" type="button">下載付款明細圖</button></div>
   </section>
   <section id="lessons" aria-label="上課紀錄">
     <div class="empty" id="empty"><b>還沒有上課紀錄</b>連上 Google Sheet 後會自動載入；或在上面填日期和筆記，按「新增」。</div>
@@ -231,7 +255,8 @@ const $=s=>document.querySelector(s);
 const fmt=n=>'NT$'+Math.round(n).toLocaleString('en-US');
 const WD=['日','一','二','三','四','五','六'];
 const LS_CACHE='eng-lessons-cache-v1', LS_SYNC='eng-lessons-sync-v1';
-let lessons=[], payments=[], editingId=null; const expanded=new Set(); const LS_PAY='eng-lessons-pay-v1';
+let lessons=[], payments=[], claims=[], editingId=null; const expanded=new Set(); const LS_PAY='eng-lessons-pay-v1', LS_CLAIM='eng-lessons-claim-v1', LS_BUDGET='eng-lessons-budget-v1';
+let budget=lsGet(LS_BUDGET)||{usd:1000,rate:32,year:new Date().getFullYear()};
 let sync=null;
 function lsGet(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
@@ -254,7 +279,7 @@ async function pull(){
   try{
     const r=await fetch(sync.url+'?token='+encodeURIComponent(sync.token));const j=await r.json();
     if(!j.ok)throw new Error(j.error);
-    lessons=j.lessons;payments=j.payments||[];lsSet(LS_CACHE,lessons);lsSet(LS_PAY,payments);render();setSync('ok','已同步 Google Sheet · '+new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}));
+    lessons=j.lessons;payments=j.payments||[];claims=j.claims||[];lsSet(LS_CACHE,lessons);lsSet(LS_PAY,payments);lsSet(LS_CLAIM,claims);render();setSync('ok','已同步 Google Sheet · '+new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}));
   }catch(e){setSync('err','無法連到 Google Sheet，先顯示這台裝置上的資料');}
 }
 async function post(body){
@@ -262,7 +287,7 @@ async function post(body){
   setSync('','儲存到 Google Sheet…');
   const r=await fetch(sync.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...body,token:sync.token})});
   const j=await r.json();if(!j.ok)throw new Error(j.error||'failed');
-  lessons=j.lessons;payments=j.payments||payments;lsSet(LS_CACHE,lessons);lsSet(LS_PAY,payments);render();
+  lessons=j.lessons;payments=j.payments||payments;claims=j.claims||claims;lsSet(LS_CACHE,lessons);lsSet(LS_PAY,payments);lsSet(LS_CLAIM,claims);render();
   setSync('ok','已同步 Google Sheet · '+new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}));
   return j;
 }
@@ -288,7 +313,8 @@ function render(){
   $('#s-month').textContent=fmt(lessons.filter(l=>(l.date||'').startsWith(ym)).reduce((a,l)=>a+amountOf(l),0));
   const paid=payments.reduce((a,p)=>a+(Number(p.amount)||0),0);
   const bal=paid-total;
-  const su=$('#s-unpaid');su.textContent=(bal<0?'-':'')+fmt(Math.abs(bal))+(bal>=0&&hours?' · '+Math.round(bal/1200)+' 堂':'');su.classList.toggle('warn',bal<0);
+  const su=$('#s-unpaid');su.textContent=(bal<0?'-':'')+fmt(Math.abs(bal));const sm=document.createElement('small');sm.textContent=bal>=0?`還有 ${Math.round(bal/1200)} 堂`:'超出預付';su.append(sm);su.classList.toggle('warn',bal<0);
+  renderClaims();
   renderPays(paid);
   const host=$('#lessons');host.querySelectorAll('.month').forEach(n=>n.remove());
   $('#empty').hidden=lessons.length>0;
@@ -465,13 +491,146 @@ $('#mix').onclick=()=>{
   const b=$('#sh-b');b.innerHTML='';quizView(b,shuffle(all).slice(0,10));
 };
 
+
+/* ---------- image export (canvas) ---------- */
+function loadFonts(){return (document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();}
+async function renderStatement(opts){
+  await loadFonts();
+  const W=1080, pad=64; const font=(w,z)=>`${w} ${z}px Geist, "Noto Sans TC", system-ui, sans-serif`;
+  const mono=z=>`500 ${z}px "Geist Mono", ui-monospace, monospace`;
+  const ops=[]; let y=pad;
+  const add=(h,fn)=>{const y0=y;ops.push(g=>fn(g,y0));y+=h;};
+  add(52,(g,y0)=>{g.font=font(700,40);g.fillStyle='#111';g.fillText(opts.title,pad,y0+40);});
+  add(44,(g,y0)=>{g.font=font(400,22);g.fillStyle='#777';g.fillText(clip(g,opts.subtitle,W-pad*2),pad,y0+24);});
+  opts.sections.forEach(sec=>{
+    add(60,(g,y0)=>{g.font=font(600,24);g.fillStyle='#111';g.fillText(sec.title,pad,y0+30);g.fillStyle='#e6e6e6';g.fillRect(pad,y0+44,W-pad*2,2);});
+    if(!sec.rows.length)add(44,(g,y0)=>{g.font=font(400,20);g.fillStyle='#999';g.fillText('（無）',pad,y0+26);});
+    sec.rows.forEach(r=>add(44,(g,y0)=>{
+      g.font=mono(20);g.fillStyle='#777';g.fillText(r[0],pad,y0+26);
+      g.font=font(400,21);g.fillStyle='#111';g.fillText(clip(g,r[1],W-pad*2-420),pad+170,y0+26);
+      g.font=mono(21);g.textAlign='right';g.fillStyle='#111';g.fillText(r[2],W-pad,y0+26);g.textAlign='left';
+      g.fillStyle='#f0f0f0';g.fillRect(pad,y0+40,W-pad*2,1);}));
+    add(56,(g,y0)=>{g.font=font(700,22);g.fillStyle='#111';g.fillText(sec.total[0],pad,y0+30);g.textAlign='right';g.font=mono(24);g.fillText(sec.total[1],W-pad,y0+30);g.textAlign='left';});
+  });
+  (opts.foot||[]).forEach(t=>add(30,(g,y0)=>{g.font=font(400,19);g.fillStyle='#777';g.fillText(clip(g,t,W-pad*2),pad,y0+22);}));
+  const H=y+pad, dpr=2;
+  const c=document.createElement('canvas');c.width=W*dpr;c.height=H*dpr;const g=c.getContext('2d');g.scale(dpr,dpr);
+  g.fillStyle='#fff';g.fillRect(0,0,W,H);ops.forEach(fn=>fn(g));
+  return c;
+}
+function clip(g,t,w){t=String(t||'');if(g.measureText(t).width<=w)return t;while(t.length&&g.measureText(t+'…').width>w)t=t.slice(0,-1);return t+'…';}
+function downloadCanvas(c,name){
+  c.toBlob(b=>{const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000);
+    showImage(c,name);},'image/png');
+}
+function showImage(c,name){
+  openSheet('明細圖已產生','手機上：長按圖片 → 儲存影像；電腦會直接下載。');tabs([],'',()=>{});const b=$('#sh-b');b.innerHTML='';
+  const img=new Image();img.src=c.toDataURL('image/png');img.style.width='100%';img.style.borderRadius='12px';img.style.border='1px solid var(--line)';img.alt=name;
+  b.append(img);
+}
+const usd=n=>'US$'+(Math.round(n*100)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const zhDate=d=>d?d.replace(/-/g,'/'):'';
+
+$('#pay-img').onclick=async()=>{
+  const rows=[...payments].sort((a,b)=>a.date.localeCompare(b.date)).map(p=>[zhDate(p.date),p.note||'',fmt(p.amount)]);
+  const total=payments.reduce((a,p)=>a+(Number(p.amount)||0),0);
+  const c=await renderStatement({title:'英語家教學費付款明細',subtitle:`每堂 1 小時 NT$1,200 · 月結預付 · 產生日期 ${zhDate(today())}`,
+    sections:[{title:'付款紀錄',rows,total:['合計',fmt(total)+`（${payments.reduce((a,p)=>a+(Number(p.lessons)||0),0)} 堂）`]}],
+    foot:['付款方式：LINE Pay 轉帳給家教老師（私人家教，無發票）']});
+  downloadCanvas(c,'英語家教_付款明細.png');
+};
+
+/* ---------- 報帳 claims ---------- */
+function claimYearRange(){const y=Number(budget.year)||new Date().getFullYear();return [`${y}-01-01`,`${y}-12-31`];}
+function renderClaims(){
+  const [y1,y2]=claimYearRange();
+  const inYear=claims.filter(c=>c.date>=y1&&c.date<=y2);
+  const usedUsd=inYear.reduce((a,c)=>a+(Number(c.usd)||0),0);
+  const cap=Number(budget.usd)||1000;
+  const left=Math.max(0,cap-usedUsd);
+  $('#budget-label').textContent=`${budget.year} 年度補助 ${usd(cap)}`;
+  $('#budget-rate').textContent=`匯率 ${budget.rate} TWD/USD`;
+  $('#budget-left').textContent=`剩餘 ${usd(left)}`;
+  $('#budget-bar').style.width=Math.min(100,usedUsd/cap*100)+'%';
+  $('#budget-used').textContent=`已申請 ${usd(usedUsd)}（${inYear.length} 筆）`;
+  $('#budget-period').textContent=`${zhDate(y1)} – ${zhDate(y2)}`;
+  $('#claim-sum').textContent=claims.length?`${claims.length} 筆申請`:'還沒有申請紀錄';
+  const host=$('#claimlist');host.innerHTML='';
+  [...claims].sort((a,b)=>b.date.localeCompare(a.date)).forEach(c=>{
+    const el=document.createElement('div');el.className='claim';
+    const d=document.createElement('div');d.className='d';d.textContent=`${zhDate(c.date)} · ${c.status||'申請中'}`;
+    const a=document.createElement('div');a.className='a';a.textContent=`${fmt(c.twd)} ≈ ${usd(c.usd)}`;
+    const n=document.createElement('div');n.className='n';n.textContent=c.note||'';
+    const acts=document.createElement('div');acts.className='actions x';
+    const re=document.createElement('button');re.type='button';re.className='btn small';re.textContent='重新產圖';re.onclick=()=>makeClaimImage(c);
+    const st=document.createElement('button');st.type='button';st.className='btn small';st.textContent=c.status==='已核銷'?'改為申請中':'標記已核銷';st.onclick=()=>saveClaims([{...c,status:c.status==='已核銷'?'申請中':'已核銷'}]);
+    const x=document.createElement('button');x.type='button';x.className='btn small danger';x.textContent='刪除';
+    x.onclick=()=>{if(x.dataset.armed){deleteClaim(c.id);}else{x.dataset.armed='1';x.textContent='確定刪除？';setTimeout(()=>{if(x.isConnected){delete x.dataset.armed;x.textContent='刪除';}},3000);}};
+    acts.append(re,st,x);el.append(d,a,n,acts);host.append(el);
+  });
+}
+async function saveClaims(list){
+  list.forEach(c=>{const i=claims.findIndex(x=>x.id===c.id);if(i>=0)claims[i]=c;else claims.push(c);});
+  lsSet(LS_CLAIM,claims);render();
+  try{await post({action:'claim_upsert',claims:list});return true;}catch(e){setSync('err','報帳紀錄沒存到 Google Sheet，請稍後重新同步');return false;}
+}
+async function deleteClaim(id){
+  claims=claims.filter(c=>c.id!==id);lsSet(LS_CLAIM,claims);render();
+  try{await post({action:'claim_delete',id});}catch(e){setSync('err','刪除沒同步到 Google Sheet，請稍後重新同步');}
+}
+async function makeClaimImage(c){
+  const ls=lessons.filter(l=>l.date>=c.from&&l.date<=c.to).sort((a,b)=>a.date.localeCompare(b.date));
+  const ps=payments.filter(p=>p.date>=c.from&&p.date<=c.to).sort((a,b)=>a.date.localeCompare(b.date));
+  const lt=ls.reduce((a,l)=>a+amountOf(l),0), pt=ps.reduce((a,p)=>a+(Number(p.amount)||0),0);
+  const canvas=await renderStatement({title:'英語家教學費報帳明細',subtitle:`期間 ${zhDate(c.from)} – ${zhDate(c.to)} · 1 對 1 線上英語家教（Google Meet）· 每堂 1 小時 NT$1,200`,
+    sections:[
+      {title:`上課紀錄（${ls.length} 堂）`,rows:ls.map(l=>[zhDate(l.date),l.topic||'英語會話',fmt(amountOf(l))]),total:['課程小計',fmt(lt)]},
+      {title:`付款紀錄（${ps.length} 筆）`,rows:ps.map(p=>[zhDate(p.date),p.note||'LINE Pay 轉帳',fmt(p.amount)]),total:['付款小計',fmt(pt)]}],
+    foot:[`申請金額：${fmt(c.twd)} ≈ ${usd(c.usd)}（匯率 ${c.rate} TWD/USD）`,'付款方式：LINE Pay 轉帳給家教老師；私人家教無發票，附上對話與轉帳截圖為證。',`製表日期 ${zhDate(today())}`]});
+  downloadCanvas(canvas,`英語家教_報帳明細_${c.from}_${c.to}.png`);
+}
+$('#claim-new').onclick=()=>{
+  openSheet('產生報帳明細','選期間，會用這段期間的付款金額當申請金額');tabs([],'',()=>{});const b=$('#sh-b');b.innerHTML='';
+  const f=document.createElement('form');f.style.display='grid';f.style.gap='12px';
+  const last=claims.length?[...claims].sort((a,b)=>b.to.localeCompare(a.to))[0].to:null;
+  const defFrom=last?nextDay(last):(payments.length?[...payments].sort((a,b)=>a.date.localeCompare(b.date))[0].date:today());
+  f.innerHTML=`<div class="row" style="grid-template-columns:1fr 1fr"><label>起<input type="date" id="c-from" required></label><label>迄<input type="date" id="c-to" required></label></div>
+  <div class="row" style="grid-template-columns:1fr 1fr"><label>申請金額 TWD<input type="number" id="c-twd" min="0" step="100" required inputmode="numeric"></label><label>匯率 TWD/USD<input type="number" id="c-rate" step="0.01" required inputmode="decimal"></label></div>
+  <p class="note" id="c-preview"></p>
+  <label>備註<input type="text" id="c-note" placeholder="例如：2026 Q3 英語家教"></label>
+  <button class="btn primary" type="submit">產生明細圖並記錄</button>`;
+  b.append(f);
+  const q=id=>f.querySelector(id);
+  q('#c-from').value=defFrom;q('#c-to').value=today();q('#c-rate').value=budget.rate;
+  const recompute=()=>{const fr=q('#c-from').value,to=q('#c-to').value;const pt=payments.filter(p=>p.date>=fr&&p.date<=to).reduce((a,p)=>a+(Number(p.amount)||0),0);
+    if(!q('#c-twd').dataset.touched)q('#c-twd').value=pt;const twd=Number(q('#c-twd').value)||0,rate=Number(q('#c-rate').value)||1;
+    const n=lessons.filter(l=>l.date>=fr&&l.date<=to).length;q('#c-preview').textContent=`這段期間 ${n} 堂課、付款 ${fmt(pt)} → 申請 ${fmt(twd)} ≈ ${usd(twd/rate)}`;};
+  ['#c-from','#c-to','#c-rate'].forEach(id=>q(id).addEventListener('input',recompute));q('#c-twd').addEventListener('input',()=>{q('#c-twd').dataset.touched='1';recompute();});
+  recompute();
+  f.addEventListener('submit',async ev=>{ev.preventDefault();
+    const fr=q('#c-from').value,to=q('#c-to').value,twd=Number(q('#c-twd').value)||0,rate=Number(q('#c-rate').value)||1;
+    const c={id:'claim-'+to+'-'+Math.random().toString(36).slice(2,5),date:today(),from:fr,to,twd,rate,usd:Math.round(twd/rate*100)/100,status:'申請中',note:q('#c-note').value.trim()||`${zhDate(fr)}–${zhDate(to)} 英語家教`};
+    budget.rate=rate;lsSet(LS_BUDGET,budget);
+    await makeClaimImage(c);saveClaims([c]);});
+};
+function nextDay(d){const t=new Date(d+'T00:00:00');t.setDate(t.getDate()+1);return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');}
+$('#claim-set').onclick=()=>{
+  openSheet('補助設定','');tabs([],'',()=>{});const b=$('#sh-b');b.innerHTML='';
+  const f=document.createElement('form');f.style.display='grid';f.style.gap='12px';
+  f.innerHTML=`<label>年度<input type="number" id="b-year" step="1"></label><label>每年補助額度 USD<input type="number" id="b-usd" step="1"></label><label>預設匯率 TWD/USD<input type="number" id="b-rate" step="0.01"></label><button class="btn primary" type="submit">儲存</button>`;
+  b.append(f);f.querySelector('#b-year').value=budget.year;f.querySelector('#b-usd').value=budget.usd;f.querySelector('#b-rate').value=budget.rate;
+  f.addEventListener('submit',ev=>{ev.preventDefault();budget={year:Number(f.querySelector('#b-year').value)||new Date().getFullYear(),usd:Number(f.querySelector('#b-usd').value)||1000,rate:Number(f.querySelector('#b-rate').value)||32};lsSet(LS_BUDGET,budget);closeSheet();render();toast('已儲存');});
+};
+
 /* ---------- settings ---------- */
 $('#gear').onclick=()=>{
   openSheet('設定','');tabs([],'',()=>{});const b=$('#sh-b');b.innerHTML='';
   const s1=document.createElement('div');s1.className='setting';
   s1.innerHTML='<b>Google Sheet 後端</b>';
-  const st=document.createElement('p');st.className='note';st.textContent=sync?'已連線。每次新增、修改、刪除都會存到 Google Sheet。':'尚未連線。請用 Claude 給你的連線網址打開一次這個頁面。';
+  const st=document.createElement('p');st.className='note';st.textContent=sync?'已連線。每次新增、修改、刪除都會存到 Google Sheet。':'尚未連線。把 Claude 給你的連線網址貼在下面，或直接用那個網址打開一次。';
   s1.append(st);
+  if(!sync){const pf=document.createElement('form');pf.style.display='grid';pf.style.gap='8px';pf.innerHTML='<input type="text" id="sync-paste" placeholder="貼上連線網址 …#sync=…"><button class="btn primary" type="submit">連線</button>';
+    pf.addEventListener('submit',ev=>{ev.preventDefault();if(applySyncLink(pf.querySelector('#sync-paste').value)){closeSheet();toast('已連上 Google Sheet');pull();}else toast('網址格式不對');});s1.append(pf);}
   if(sync){
     const r=document.createElement('div');r.className='actions';
     const re=document.createElement('button');re.className='btn';re.type='button';re.textContent='重新同步';re.onclick=async()=>{await pull();toast('已重新同步');};
@@ -492,7 +651,7 @@ $('#gear').onclick=()=>{
 /* ---------- boot ---------- */
 readHash();
 sync=sync||lsGet(LS_SYNC);
-lessons=lsGet(LS_CACHE)||[];payments=lsGet(LS_PAY)||[];
+lessons=lsGet(LS_CACHE)||[];payments=lsGet(LS_PAY)||[];claims=lsGet(LS_CLAIM)||[];
 $('#f-date').value=today();updatePreview();render();pull();
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')pull();});
 </script>
