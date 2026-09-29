@@ -9,20 +9,20 @@
 <meta name="theme-color" content="#f3f5f8">
 <title>英語家教上課本</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap">
 <style>
 /* Layout: one narrow column — ledger summary strip, add-lesson form, month-grouped lesson rows; review sheet slides over */
 :root{
-  --bg:#f3f5f8; --paper:#ffffff; --ink:#18203a; --muted:#5e6782; --line:#dde2ec;
-  --accent:#2f4bd6; --accent-soft:#e6eafc; --ok:#1d8a5b; --ok-soft:#e1f3ea; --warn:#b5540f; --warn-soft:#fbeadb;
-  --f-display:"Bricolage Grotesque","Noto Sans TC",system-ui,sans-serif;
-  --f-body:"Noto Sans TC",system-ui,-apple-system,"PingFang TC",sans-serif;
-  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --bg:#f4f4f4; --paper:#ffffff; --ink:#111111; --muted:#7a7a7a; --line:#e6e6e6; --tile:#f0f0f0;
+  --accent:#111111; --accent-soft:#ececec; --ok:#1d8a5b; --ok-soft:#e4f3ea; --warn:#c2410c; --warn-soft:#fbeadb;
+  --f-display:"Geist","Noto Sans TC",system-ui,sans-serif;
+  --f-body:"Geist","Noto Sans TC",system-ui,-apple-system,"PingFang TC",sans-serif;
+  --f-mono:"Geist Mono",ui-monospace,Menlo,monospace;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#10131d; --paper:#171b28; --ink:#e7eaf4; --muted:#98a0b8; --line:#2a3044;
-  --accent:#8198ff; --accent-soft:#232b4d; --ok:#5fcf9b; --ok-soft:#173226; --warn:#f0a066; --warn-soft:#3a2616; color-scheme:dark}}
+  --bg:#0f0f0f; --paper:#181818; --ink:#f2f2f2; --muted:#9a9a9a; --line:#2a2a2a; --tile:#222222;
+  --accent:#f2f2f2; --accent-soft:#2a2a2a; --ok:#5fcf9b; --ok-soft:#173226; --warn:#f0a066; --warn-soft:#3a2616; color-scheme:dark}}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -32,18 +32,18 @@ header{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between
 h1{font-family:var(--f-display);font-weight:700;font-size:28px;letter-spacing:-.01em;margin:0}
 h1 small{display:block;font-family:var(--f-mono);font-size:12px;font-weight:400;color:var(--muted);letter-spacing:.04em;margin-top:4px}
 .hbtns{display:flex;gap:8px;flex-wrap:wrap}
-.btn{font:inherit;font-weight:500;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;padding:8px 14px;cursor:pointer}
+.btn{font:inherit;font-weight:500;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:8px 16px;cursor:pointer}
 .btn:hover{border-color:var(--accent)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--bg)}
 .btn.small{padding:4px 10px;font-size:13px}
 .btn.danger{color:var(--warn)}
-.btn.study{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.btn.study{background:var(--tile);border-color:transparent;color:var(--ink)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .sync{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
 .dot.ok{background:var(--ok)}.dot.err{background:var(--warn)}
 
-.stats{display:grid;grid-template-columns:repeat(4,1fr);background:var(--paper);border:1px solid var(--line);border-radius:12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);background:var(--paper);border:1px solid var(--line);border-radius:16px}
 .stat{padding:14px 16px;border-left:1px solid var(--line);min-width:0}
 .stat:first-child{border-left:0}
 .stat .k{font-size:12px;color:var(--muted);letter-spacing:.04em}
@@ -51,18 +51,27 @@ h1 small{display:block;font-family:var(--f-mono);font-size:12px;font-weight:400;
 .stat .v.warn{color:var(--warn)}
 @media (max-width:560px){.stats{grid-template-columns:1fr 1fr}.stat:nth-child(3){border-left:0}.stat:nth-child(n+3){border-top:1px solid var(--line)}}
 
-form#add{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px}
+form#add{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:12px}
 form#add h2{margin:0;font-size:15px}
 .row{display:grid;grid-template-columns:1.2fr .7fr .9fr;gap:10px}
 @media (max-width:560px){.row{grid-template-columns:1fr 1fr}.row .full{grid-column:1/-1}}
 label{display:grid;gap:4px;font-size:12px;color:var(--muted);min-width:0}
-input,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;min-width:0}
+input,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--tile);border:1px solid transparent;border-radius:10px;padding:8px 10px;width:100%;min-width:0}
 textarea{resize:vertical;min-height:120px}
 .amount-preview{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
 .form-foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
 .check{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ink)}
 .check input{width:auto}
 .actions{display:flex;gap:6px;flex-wrap:wrap}
+.pay{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:10px 14px;border-top:1px solid var(--line);align-items:center}
+.pay:first-child{border-top:0}
+.pay .d{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.pay .n{font-size:14px}
+.pay .a{font-family:var(--f-mono);font-weight:500;font-variant-numeric:tabular-nums;text-align:right}
+.pay .x{grid-column:2;justify-self:end}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding-inline:2px}
+.sec-h h3{margin:0;font-family:var(--f-display);font-size:17px}
+.sec-h span{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
 .status{font-size:13px;color:var(--muted);min-height:1.2em}
 .status.err{color:var(--warn)}
 
@@ -70,18 +79,18 @@ textarea{resize:vertical;min-height:120px}
 .month-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding-inline:2px}
 .month-h h3{margin:0;font-family:var(--f-display);font-size:17px}
 .month-h span{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-.list{background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.list{background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden}
 .lesson{display:grid;grid-template-columns:56px 1fr auto;gap:12px;padding:12px 14px;border-top:1px solid var(--line);align-items:start}
 .lesson:first-child{border-top:0}
-.lesson.editing{background:var(--accent-soft)}
+.lesson.editing{background:var(--tile)}
 .date{font-family:var(--f-mono);font-variant-numeric:tabular-nums;line-height:1.3}
 .date b{display:block;font-size:20px;font-weight:500}
 .date span{font-size:11px;color:var(--muted)}
 .body{min-width:0}
 .topic{font-weight:500;overflow-wrap:anywhere}
-.notes{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:6px;padding:10px 12px;background:var(--bg);border-radius:8px;line-height:1.65}
+.notes{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:6px;padding:10px 12px;background:var(--tile);border-radius:10px;line-height:1.65}
 .notes.clamp{max-height:9.5em;overflow:hidden;-webkit-mask-image:linear-gradient(#000 70%,transparent);mask-image:linear-gradient(#000 70%,transparent)}
-.more{background:none;border:0;padding:4px 0 0;font:inherit;font-size:13px;color:var(--accent);cursor:pointer}
+.more{background:none;border:0;padding:4px 0 0;font:inherit;font-size:13px;color:var(--muted);text-decoration:underline;cursor:pointer}
 .meta{font-size:12px;color:var(--muted);margin-top:4px;font-family:var(--f-mono)}
 .lrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .right{display:grid;justify-items:end;gap:6px}
@@ -103,22 +112,22 @@ textarea{resize:vertical;min-height:120px}
 .x{background:none;border:0;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:4px 8px}
 .tabs{display:flex;gap:4px;padding:0 16px 10px;border-bottom:1px solid var(--line)}
 .tab{font:inherit;font-size:14px;border:0;background:none;color:var(--muted);padding:6px 12px;border-radius:999px;cursor:pointer}
-.tab.on{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.tab.on{background:var(--ink);color:var(--bg);font-weight:600}
 .sheet-b{overflow:auto;padding:16px;display:grid;gap:14px;-webkit-overflow-scrolling:touch}
 .points{margin:0;padding-left:1.2em;display:grid;gap:8px}
 .vocab{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px}
 .vocab .en{font-family:var(--f-mono);font-weight:500}
 .vocab .zh{color:var(--muted)}
 .h4{font-size:12px;color:var(--muted);letter-spacing:.06em;margin:0}
-.card{border:1px solid var(--line);border-radius:14px;min-height:180px;padding:22px;display:grid;place-items:center;text-align:center;cursor:pointer;background:var(--bg);gap:12px}
+.card{border:1px solid var(--line);border-radius:16px;min-height:180px;padding:22px;display:grid;place-items:center;text-align:center;cursor:pointer;background:var(--paper);gap:12px}
 .card .zh{font-size:18px;font-weight:500}
-.card .en{font-size:17px;color:var(--accent);font-weight:500}
+.card .en{font-size:17px;color:var(--ink);font-weight:600;border-top:1px dashed var(--line);padding-top:12px}
 .card .hint{font-size:12px;color:var(--muted)}
 .cardnav{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .count{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
 .q{font-size:16px;font-weight:500}
 .opts{display:grid;gap:8px}
-.opt{font:inherit;text-align:left;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:10px;padding:10px 12px;cursor:pointer}
+.opt{font:inherit;text-align:left;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:12px;padding:10px 12px;cursor:pointer}
 .opt.right{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
 .opt.wrong{border-color:var(--warn);background:var(--warn-soft);color:var(--warn)}
 .explain{font-size:14px;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px 12px}
@@ -134,7 +143,7 @@ textarea{resize:vertical;min-height:120px}
 <body>
 <div class="wrap">
   <header>
-    <h1>英語家教上課本<small>NT$1,200 / HOUR</small></h1>
+    <h1>英語家教上課本<small>NT$1,200 / HOUR · 月結預付</small></h1>
     <div class="hbtns">
       <button class="btn study" id="mix" type="button">綜合測驗</button>
       <button class="btn" id="jump" type="button">＋ 新增</button>
@@ -147,7 +156,7 @@ textarea{resize:vertical;min-height:120px}
     <div class="stat"><div class="k">累計學費</div><div class="v" id="s-total">NT$0</div></div>
     <div class="stat"><div class="k">上課堂數 / 時數</div><div class="v" id="s-count">0 堂</div></div>
     <div class="stat"><div class="k">本月學費</div><div class="v" id="s-month">NT$0</div></div>
-    <div class="stat"><div class="k">尚未付款</div><div class="v" id="s-unpaid">NT$0</div></div>
+    <div class="stat"><div class="k">預付餘額</div><div class="v" id="s-unpaid">NT$0</div></div>
   </section>
 
   <form id="add" autocomplete="off">
@@ -160,7 +169,7 @@ textarea{resize:vertical;min-height:120px}
     <label>上課主題<input type="text" id="f-topic" placeholder="例如：Small talk、商務 email、過去完成式"></label>
     <label>筆記 / 單字<textarea id="f-notes" placeholder="把這堂課的筆記整段貼上"></textarea></label>
     <div class="form-foot">
-      <label class="check"><input type="checkbox" id="f-paid" checked> 已付款（月初預付）</label>
+      <span></span><input type="hidden" id="f-paid" value="1">
       <span class="amount-preview" id="preview">本堂 NT$1,200</span>
       <div class="actions">
         <button class="btn" type="button" id="cancel" hidden>取消編輯</button>
@@ -170,6 +179,11 @@ textarea{resize:vertical;min-height:120px}
     <div class="status" id="status" role="status"></div>
   </form>
 
+  <section id="paysec" aria-label="付款紀錄" class="month">
+    <div class="sec-h"><h3>付款紀錄</h3><span id="pay-sum"></span></div>
+    <div class="list" id="paylist"></div>
+    <div class="actions"><button class="btn small" id="pay-add" type="button">＋ 記一筆付款</button></div>
+  </section>
   <section id="lessons" aria-label="上課紀錄">
     <div class="empty" id="empty"><b>還沒有上課紀錄</b>連上 Google Sheet 後會自動載入；或在上面填日期和筆記，按「新增」。</div>
   </section>
@@ -217,7 +231,7 @@ const $=s=>document.querySelector(s);
 const fmt=n=>'NT$'+Math.round(n).toLocaleString('en-US');
 const WD=['日','一','二','三','四','五','六'];
 const LS_CACHE='eng-lessons-cache-v1', LS_SYNC='eng-lessons-sync-v1';
-let lessons=[], editingId=null; const expanded=new Set();
+let lessons=[], payments=[], editingId=null; const expanded=new Set(); const LS_PAY='eng-lessons-pay-v1';
 let sync=null;
 function lsGet(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
@@ -240,7 +254,7 @@ async function pull(){
   try{
     const r=await fetch(sync.url+'?token='+encodeURIComponent(sync.token));const j=await r.json();
     if(!j.ok)throw new Error(j.error);
-    lessons=j.lessons;lsSet(LS_CACHE,lessons);render();setSync('ok','已同步 Google Sheet · '+new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}));
+    lessons=j.lessons;payments=j.payments||[];lsSet(LS_CACHE,lessons);lsSet(LS_PAY,payments);render();setSync('ok','已同步 Google Sheet · '+new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}));
   }catch(e){setSync('err','無法連到 Google Sheet，先顯示這台裝置上的資料');}
 }
 async function post(body){
@@ -248,7 +262,7 @@ async function post(body){
   setSync('','儲存到 Google Sheet…');
   const r=await fetch(sync.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...body,token:sync.token})});
   const j=await r.json();if(!j.ok)throw new Error(j.error||'failed');
-  lessons=j.lessons;lsSet(LS_CACHE,lessons);render();
+  lessons=j.lessons;payments=j.payments||payments;lsSet(LS_CACHE,lessons);lsSet(LS_PAY,payments);render();
   setSync('ok','已同步 Google Sheet · '+new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}));
   return j;
 }
@@ -272,8 +286,10 @@ function render(){
   $('#s-total').textContent=fmt(total);
   $('#s-count').textContent=lessons.length+' 堂 · '+(+hours.toFixed(2))+' h';
   $('#s-month').textContent=fmt(lessons.filter(l=>(l.date||'').startsWith(ym)).reduce((a,l)=>a+amountOf(l),0));
-  const unpaid=lessons.filter(l=>!l.paid).reduce((a,l)=>a+amountOf(l),0);
-  const su=$('#s-unpaid');su.textContent=fmt(unpaid);su.classList.toggle('warn',unpaid>0);
+  const paid=payments.reduce((a,p)=>a+(Number(p.amount)||0),0);
+  const bal=paid-total;
+  const su=$('#s-unpaid');su.textContent=(bal<0?'-':'')+fmt(Math.abs(bal))+(bal>=0&&hours?' · '+Math.round(bal/1200)+' 堂':'');su.classList.toggle('warn',bal<0);
+  renderPays(paid);
   const host=$('#lessons');host.querySelectorAll('.month').forEach(n=>n.remove());
   $('#empty').hidden=lessons.length>0;
   const groups={};
@@ -287,6 +303,43 @@ function render(){
     arr.forEach(l=>list.append(row(l)));sec.append(h,list);host.append(sec);
   });
 }
+function renderPays(paid){
+  const host=$('#paylist');host.innerHTML='';
+  $('#pay-sum').textContent=payments.length?`${payments.length} 筆 · 共 ${fmt(paid)}`:'還沒有付款紀錄';
+  [...payments].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,expandedPays?999:4).forEach(p=>{
+    const el=document.createElement('div');el.className='pay';
+    const d=document.createElement('div');d.className='d';d.textContent=p.date;
+    const a=document.createElement('div');a.className='a';a.textContent=fmt(p.amount)+(p.lessons?` · ${p.lessons} 堂`:'');
+    const n=document.createElement('div');n.className='n';n.textContent=p.note||'';
+    const x=document.createElement('button');x.type='button';x.className='btn small danger x';x.textContent='刪除';
+    x.onclick=()=>{if(x.dataset.armed){deletePay(p.id);}else{x.dataset.armed='1';x.textContent='確定刪除？';setTimeout(()=>{if(x.isConnected){delete x.dataset.armed;x.textContent='刪除';}},3000);}};
+    el.append(d,a,n,x);host.append(el);
+  });
+  if(payments.length>4){const m=document.createElement('button');m.type='button';m.className='more';m.style.padding='10px 14px';m.textContent=expandedPays?'收起':`顯示全部 ${payments.length} 筆`;m.onclick=()=>{expandedPays=!expandedPays;render();};host.append(m);}
+}
+let expandedPays=false;
+async function savePays(list){
+  list.forEach(p=>{const i=payments.findIndex(x=>x.id===p.id);if(i>=0)payments[i]=p;else payments.push(p);});
+  lsSet(LS_PAY,payments);render();
+  try{await post({action:'pay_upsert',payments:list});return true;}catch(e){setSync('err','付款沒存到 Google Sheet，請稍後重新同步');return false;}
+}
+async function deletePay(id){
+  payments=payments.filter(p=>p.id!==id);lsSet(LS_PAY,payments);render();
+  try{await post({action:'pay_delete',id});}catch(e){setSync('err','刪除沒同步到 Google Sheet，請稍後重新同步');}
+}
+$('#pay-add').onclick=()=>{
+  openSheet('記一筆付款','預付下個月的學費');tabs([],'',()=>{});const b=$('#sh-b');b.innerHTML='';
+  const f=document.createElement('form');f.style.display='grid';f.style.gap='12px';
+  f.innerHTML=`<label>付款日期<input type="date" id="p-date" required></label>
+  <div class="row" style="grid-template-columns:1fr 1fr"><label>堂數<input type="number" id="p-n" min="1" step="1" value="4" required inputmode="numeric"></label><label>金額<input type="number" id="p-amt" min="0" step="100" value="4800" required inputmode="numeric"></label></div>
+  <label>說明<input type="text" id="p-note" placeholder="例如：10 月 4 堂（LINE Pay）"></label>
+  <button class="btn primary" type="submit">儲存</button>`;
+  b.append(f);f.querySelector('#p-date').value=today();
+  f.querySelector('#p-n').addEventListener('input',e=>{f.querySelector('#p-amt').value=(Number(e.target.value)||0)*1200;});
+  f.addEventListener('submit',async ev=>{ev.preventDefault();const date=f.querySelector('#p-date').value;
+    const p={id:'pay-'+date+'-'+Math.random().toString(36).slice(2,5),date,amount:Number(f.querySelector('#p-amt').value)||0,lessons:Number(f.querySelector('#p-n').value)||0,note:f.querySelector('#p-note').value.trim()};
+    closeSheet();const ok=await savePays([p]);toast(ok||!sync?'已記錄付款':'已存在這台裝置，Google Sheet 沒存到');});
+};
 function row(l){
   const el=document.createElement('div');el.className='lesson'+(l.id===editingId?' editing':'');
   const d=new Date((l.date||today())+'T00:00:00');
@@ -306,13 +359,11 @@ function row(l){
   const meta=document.createElement('div');meta.className='meta';meta.textContent=`${l.hours} h × ${fmt(l.rate)}`;body.append(meta);
   const right=document.createElement('div');right.className='right';
   const amt=document.createElement('div');amt.className='amt';amt.textContent=fmt(amountOf(l));
-  const pill=document.createElement('button');pill.type='button';pill.className='pill '+(l.paid?'paid':'unpaid');pill.textContent=l.paid?'已付款':'未付款';
-  pill.onclick=()=>saveLessons([{...l,paid:!l.paid}]);
   const act=document.createElement('div');act.className='actions';
   const e=document.createElement('button');e.type='button';e.className='btn small';e.textContent='編輯';e.onclick=()=>startEdit(l);
   const x=document.createElement('button');x.type='button';x.className='btn small danger';x.textContent='刪除';
   x.onclick=()=>{if(x.dataset.armed){deleteLesson(l.id);}else{x.dataset.armed='1';x.textContent='確定刪除？';setTimeout(()=>{if(x.isConnected){delete x.dataset.armed;x.textContent='刪除';}},3000);}};
-  act.append(e,x);right.append(amt,pill,act);
+  act.append(e,x);right.append(amt,act);
   el.append(date,body,right);return el;
 }
 
@@ -321,11 +372,11 @@ function updatePreview(){$('#preview').textContent='本堂 '+fmt((Number($('#f-h
 ['#f-hours','#f-rate'].forEach(s=>$(s).addEventListener('input',updatePreview));
 function startEdit(l){
   editingId=l.id;$('#f-date').value=l.date||today();$('#f-hours').value=l.hours;$('#f-rate').value=l.rate;
-  $('#f-topic').value=l.topic||'';$('#f-notes').value=l.notes||'';$('#f-paid').checked=!!l.paid;
+  $('#f-topic').value=l.topic||'';$('#f-notes').value=l.notes||'';
   $('#form-title').textContent='編輯這堂課';$('#submit').textContent='儲存修改';$('#cancel').hidden=false;updatePreview();render();
   $('#add').scrollIntoView({behavior:'smooth',block:'start'});
 }
-function resetForm(){editingId=null;$('#add').reset();$('#f-date').value=today();$('#f-hours').value=1;$('#f-rate').value=1200;$('#f-paid').checked=true;
+function resetForm(){editingId=null;$('#add').reset();$('#f-date').value=today();$('#f-hours').value=1;$('#f-rate').value=1200;
   $('#form-title').textContent='新增一堂課';$('#submit').textContent='新增';$('#cancel').hidden=true;updatePreview();render();}
 $('#cancel').onclick=resetForm;
 $('#jump').onclick=()=>{resetForm();$('#add').scrollIntoView({behavior:'smooth'});$('#f-topic').focus();};
@@ -335,7 +386,7 @@ $('#add').addEventListener('submit',async ev=>{
   const date=$('#f-date').value;if(!date){setStatus('請填日期',true);return;}
   const notes=$('#f-notes').value.trim();
   const l={id:editingId||(date+'-'+Math.random().toString(36).slice(2,6)),date,hours:Number($('#f-hours').value)||0,rate:Number($('#f-rate').value)||0,
-    topic:$('#f-topic').value.trim(),notes,paid:$('#f-paid').checked,
+    topic:$('#f-topic').value.trim(),notes,paid:true,
     study:(prev&&prev.study&&prev.notes===notes)?prev.study:null};
   const was=!!editingId;$('#submit').disabled=true;
   const ok=await saveLessons([l]);$('#submit').disabled=false;
@@ -441,7 +492,7 @@ $('#gear').onclick=()=>{
 /* ---------- boot ---------- */
 readHash();
 sync=sync||lsGet(LS_SYNC);
-lessons=lsGet(LS_CACHE)||[];
+lessons=lsGet(LS_CACHE)||[];payments=lsGet(LS_PAY)||[];
 $('#f-date').value=today();updatePreview();render();pull();
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')pull();});
 </script>
