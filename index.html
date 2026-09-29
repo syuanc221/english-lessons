@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="英語上課本">
+<meta name="theme-color" content="#f3f5f8">
+<title>英語家教上課本</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one narrow column — ledger summary strip, add-lesson form, month-grouped lesson rows; review sheet slides over */
+:root{
+  --bg:#f3f5f8; --paper:#ffffff; --ink:#18203a; --muted:#5e6782; --line:#dde2ec;
+  --accent:#2f4bd6; --accent-soft:#e6eafc; --ok:#1d8a5b; --ok-soft:#e1f3ea; --warn:#b5540f; --warn-soft:#fbeadb;
+  --f-display:"Bricolage Grotesque","Noto Sans TC",system-ui,sans-serif;
+  --f-body:"Noto Sans TC",system-ui,-apple-system,"PingFang TC",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#10131d; --paper:#171b28; --ink:#e7eaf4; --muted:#98a0b8; --line:#2a3044;
+  --accent:#8198ff; --accent-soft:#232b4d; --ok:#5fcf9b; --ok-soft:#173226; --warn:#f0a066; --warn-soft:#3a2616; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;-webkit-text-size-adjust:100%}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:24px 64px;display:grid;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px}
+h1{font-family:var(--f-display);font-weight:700;font-size:28px;letter-spacing:-.01em;margin:0}
+h1 small{display:block;font-family:var(--f-mono);font-size:12px;font-weight:400;color:var(--muted);letter-spacing:.04em;margin-top:4px}
+.hbtns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:500;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;padding:8px 14px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.btn.small{padding:4px 10px;font-size:13px}
+.btn.danger{color:var(--warn)}
+.btn.study{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sync{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.dot.ok{background:var(--ok)}.dot.err{background:var(--warn)}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);background:var(--paper);border:1px solid var(--line);border-radius:12px}
+.stat{padding:14px 16px;border-left:1px solid var(--line);min-width:0}
+.stat:first-child{border-left:0}
+.stat .k{font-size:12px;color:var(--muted);letter-spacing:.04em}
+.stat .v{font-family:var(--f-display);font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat .v.warn{color:var(--warn)}
+@media (max-width:560px){.stats{grid-template-columns:1fr 1fr}.stat:nth-child(3){border-left:0}.stat:nth-child(n+3){border-top:1px solid var(--line)}}
+
+form#add{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px}
+form#add h2{margin:0;font-size:15px}
+.row{display:grid;grid-template-columns:1.2fr .7fr .9fr;gap:10px}
+@media (max-width:560px){.row{grid-template-columns:1fr 1fr}.row .full{grid-column:1/-1}}
+label{display:grid;gap:4px;font-size:12px;color:var(--muted);min-width:0}
+input,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:120px}
+.amount-preview{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.form-foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.check{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ink)}
+.check input{width:auto}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.status{font-size:13px;color:var(--muted);min-height:1.2em}
+.status.err{color:var(--warn)}
+
+.month{display:grid;gap:8px}
+.month-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding-inline:2px}
+.month-h h3{margin:0;font-family:var(--f-display);font-size:17px}
+.month-h span{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.list{background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.lesson{display:grid;grid-template-columns:56px 1fr auto;gap:12px;padding:12px 14px;border-top:1px solid var(--line);align-items:start}
+.lesson:first-child{border-top:0}
+.lesson.editing{background:var(--accent-soft)}
+.date{font-family:var(--f-mono);font-variant-numeric:tabular-nums;line-height:1.3}
+.date b{display:block;font-size:20px;font-weight:500}
+.date span{font-size:11px;color:var(--muted)}
+.body{min-width:0}
+.topic{font-weight:500;overflow-wrap:anywhere}
+.notes{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:6px;padding:10px 12px;background:var(--bg);border-radius:8px;line-height:1.65}
+.notes.clamp{max-height:9.5em;overflow:hidden;-webkit-mask-image:linear-gradient(#000 70%,transparent);mask-image:linear-gradient(#000 70%,transparent)}
+.more{background:none;border:0;padding:4px 0 0;font:inherit;font-size:13px;color:var(--accent);cursor:pointer}
+.meta{font-size:12px;color:var(--muted);margin-top:4px;font-family:var(--f-mono)}
+.lrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.right{display:grid;justify-items:end;gap:6px}
+.amt{font-family:var(--f-mono);font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{border-radius:999px;padding:2px 10px;border:0;cursor:pointer;font:inherit;font-size:12px}
+.pill.paid{background:var(--ok-soft);color:var(--ok)}
+.pill.unpaid{background:var(--warn-soft);color:var(--warn)}
+.empty{background:var(--paper);border:1px dashed var(--line);border-radius:12px;padding:28px 20px;text-align:center;color:var(--muted)}
+.empty b{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
+@media (max-width:480px){.lesson{grid-template-columns:48px 1fr}.right{grid-column:2;justify-items:start;grid-auto-flow:column;align-items:center;justify-content:start}}
+
+/* sheets */
+.overlay{position:fixed;inset:0;background:rgba(10,14,30,.45);z-index:10;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--paper);width:100%;max-width:640px;max-height:92vh;border-radius:16px 16px 0 0;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (min-width:700px){.overlay{align-items:center}.sheet{border-radius:16px;max-height:86vh}}
+.sheet-h{display:flex;justify-content:space-between;align-items:start;gap:12px;padding:16px 16px 8px}
+.sheet-h h2{margin:0;font-family:var(--f-display);font-size:19px}
+.sheet-h p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.x{background:none;border:0;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:4px 8px}
+.tabs{display:flex;gap:4px;padding:0 16px 10px;border-bottom:1px solid var(--line)}
+.tab{font:inherit;font-size:14px;border:0;background:none;color:var(--muted);padding:6px 12px;border-radius:999px;cursor:pointer}
+.tab.on{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.sheet-b{overflow:auto;padding:16px;display:grid;gap:14px;-webkit-overflow-scrolling:touch}
+.points{margin:0;padding-left:1.2em;display:grid;gap:8px}
+.vocab{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px}
+.vocab .en{font-family:var(--f-mono);font-weight:500}
+.vocab .zh{color:var(--muted)}
+.h4{font-size:12px;color:var(--muted);letter-spacing:.06em;margin:0}
+.card{border:1px solid var(--line);border-radius:14px;min-height:180px;padding:22px;display:grid;place-items:center;text-align:center;cursor:pointer;background:var(--bg);gap:12px}
+.card .zh{font-size:18px;font-weight:500}
+.card .en{font-size:17px;color:var(--accent);font-weight:500}
+.card .hint{font-size:12px;color:var(--muted)}
+.cardnav{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.count{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.q{font-size:16px;font-weight:500}
+.opts{display:grid;gap:8px}
+.opt{font:inherit;text-align:left;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:10px;padding:10px 12px;cursor:pointer}
+.opt.right{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.opt.wrong{border-color:var(--warn);background:var(--warn-soft);color:var(--warn)}
+.explain{font-size:14px;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px 12px}
+.score{font-family:var(--f-display);font-size:34px;font-weight:700;text-align:center}
+.note{font-size:13px;color:var(--muted)}
+.setting{display:grid;gap:8px;padding:12px 0;border-top:1px solid var(--line)}
+.setting:first-child{border-top:0;padding-top:0}
+.mono{font-family:var(--f-mono);font-size:12px;word-break:break-all;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:999px;font-size:14px;z-index:20}
+@media (prefers-reduced-motion:no-preference){.overlay .sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>英語家教上課本<small>NT$1,200 / HOUR</small></h1>
+    <div class="hbtns">
+      <button class="btn study" id="mix" type="button">綜合測驗</button>
+      <button class="btn" id="jump" type="button">＋ 新增</button>
+      <button class="btn" id="gear" type="button" aria-label="設定">設定</button>
+    </div>
+  </header>
+  <div class="sync"><span class="dot" id="dot"></span><span id="synctext">尚未連線 Google Sheet</span></div>
+
+  <section class="stats" aria-label="統計">
+    <div class="stat"><div class="k">累計學費</div><div class="v" id="s-total">NT$0</div></div>
+    <div class="stat"><div class="k">上課堂數 / 時數</div><div class="v" id="s-count">0 堂</div></div>
+    <div class="stat"><div class="k">本月學費</div><div class="v" id="s-month">NT$0</div></div>
+    <div class="stat"><div class="k">尚未付款</div><div class="v" id="s-unpaid">NT$0</div></div>
+  </section>
+
+  <form id="add" autocomplete="off">
+    <h2 id="form-title">新增一堂課</h2>
+    <div class="row">
+      <label>日期<input type="date" id="f-date" required></label>
+      <label>時數<input type="number" id="f-hours" min="0.25" step="0.25" value="1" required inputmode="decimal"></label>
+      <label class="full">每小時費用<input type="number" id="f-rate" min="0" step="50" value="1200" required inputmode="numeric"></label>
+    </div>
+    <label>上課主題<input type="text" id="f-topic" placeholder="例如：Small talk、商務 email、過去完成式"></label>
+    <label>筆記 / 單字<textarea id="f-notes" placeholder="把這堂課的筆記整段貼上"></textarea></label>
+    <div class="form-foot">
+      <label class="check"><input type="checkbox" id="f-paid" checked> 已付款（月初預付）</label>
+      <span class="amount-preview" id="preview">本堂 NT$1,200</span>
+      <div class="actions">
+        <button class="btn" type="button" id="cancel" hidden>取消編輯</button>
+        <button class="btn primary" type="submit" id="submit">新增</button>
+      </div>
+    </div>
+    <div class="status" id="status" role="status"></div>
+  </form>
+
+  <section id="lessons" aria-label="上課紀錄">
+    <div class="empty" id="empty"><b>還沒有上課紀錄</b>連上 Google Sheet 後會自動載入；或在上面填日期和筆記，按「新增」。</div>
+  </section>
+</div>
+
+<div class="overlay" id="ov" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-title">
+    <div class="sheet-h"><div><h2 id="sh-title"></h2><p id="sh-sub"></p></div><button class="x" id="sh-x" type="button" aria-label="關閉">×</button></div>
+    <div class="tabs" id="sh-tabs"></div>
+    <div class="sheet-b" id="sh-b"></div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ---------- note extraction (fallback for lessons without a study pack) ---------- */
+function extractStudy(notes){
+  const CJK=/[㐀-鿿！-～]/;
+  const clean=s=>s.replace(/^[\s*＊•⭐✅👉🌴😡🤯>\-–—→]+/u,'').replace(/\s+/g,' ').trim();
+  const lines=(notes||'').split('\n').map(s=>s.trim());
+  const vocab=[],cards=[],points=[];const seenV=new Set(),seenP=new Set();
+  const isZh=s=>{const c=(s.match(/[㐀-鿿]/g)||[]).length;const a=(s.match(/[A-Za-z]/g)||[]).length;return c>=2&&c>=a/3;};
+  const isEn=s=>{const t=clean(s);if(CJK.test(t.replace(/[（）()]/g,'')))return false;return /[A-Za-z]/.test(t)&&t.split(' ').length>=4;};
+  for(let i=0;i<lines.length;i++){
+    const raw=lines[i];if(!raw)continue;const t=clean(raw);
+    if(/^[⭐✅]/u.test(raw)&&!CJK.test(t)&&t.split(' ').length>=4)points.push(t);
+    if(isEn(raw)){const nx=lines[i+1]||'';if(nx&&isZh(nx)&&!seenP.has(t)){seenP.add(t);cards.push({en:t,zh:clean(nx).replace(/^[（(]|[）)]$/g,'')});}continue;}
+    const m=t.match(/^([A-Za-z][A-Za-z '’\-\/.,+]*?(?:\s*\((?:v|n|adj|adv)\))?)\s*[=＝:：]?\s*([㐀-鿿][^A-Za-z]*)$/);
+    if(m){const en=m[1].trim().replace(/[\s,.]+$/,''),zh=m[2].trim().replace(/^[（(]|[）)]$/g,'').trim();
+      if(en.replace(/\((v|n|adj|adv)\)/,'').trim().split(/\s+/).length<=6&&en.length>=2&&!seenV.has(en.toLowerCase())){seenV.add(en.toLowerCase());vocab.push({en,zh});}}
+  }
+  // simple quiz from vocab
+  const quiz=[];const pool=vocab.slice();
+  shuffle(pool).slice(0,5).forEach(v=>{
+    const others=shuffle(vocab.filter(o=>o!==v)).slice(0,3).map(o=>o.en);
+    if(others.length<3)return;
+    const options=shuffle([v.en,...others]);quiz.push({q:`「${v.zh}」的英文是？`,options,answer:options.indexOf(v.en),explain:`${v.en}：${v.zh}`});
+  });
+  return {points:points.slice(0,5),vocab,cards,quiz,auto:true};
+}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* ---------- state ---------- */
+const $=s=>document.querySelector(s);
+const fmt=n=>'NT$'+Math.round(n).toLocaleString('en-US');
+const WD=['日','一','二','三','四','五','六'];
+const LS_CACHE='eng-lessons-cache-v1', LS_SYNC='eng-lessons-sync-v1';
+let lessons=[], editingId=null; const expanded=new Set();
+let sync=null;
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function amountOf(l){return (Number(l.hours)||0)*(Number(l.rate)||0);}
+function setStatus(msg,err){const s=$('#status');s.textContent=msg||'';s.classList.toggle('err',!!err);}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2200);}
+function setSync(state,text){$('#dot').className='dot'+(state?' '+state:'');$('#synctext').textContent=text;}
+
+/* ---------- sync with Google Sheet (Apps Script) ---------- */
+function readHash(){
+  const m=location.hash.match(/#sync=([^&]+)/);if(!m)return;
+  try{const [url,token,sheet]=decodeURIComponent(escape(atob(m[1]))).split('|');if(url&&token){sync={url,token,sheet:sheet||''};lsSet(LS_SYNC,sync);toast('已連上 Google Sheet');}}catch(e){}
+  history.replaceState(null,'',location.pathname);
+}
+async function pull(){
+  if(!sync){setSync('','尚未連線 Google Sheet，資料只存在這台裝置');return;}
+  setSync('','同步中…');
+  try{
+    const r=await fetch(sync.url+'?token='+encodeURIComponent(sync.token));const j=await r.json();
+    if(!j.ok)throw new Error(j.error);
+    lessons=j.lessons;lsSet(LS_CACHE,lessons);render();setSync('ok','已同步 Google Sheet · '+new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}));
+  }catch(e){setSync('err','無法連到 Google Sheet，先顯示這台裝置上的資料');}
+}
+async function post(body){
+  if(!sync)return null;
+  setSync('','儲存到 Google Sheet…');
+  const r=await fetch(sync.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...body,token:sync.token})});
+  const j=await r.json();if(!j.ok)throw new Error(j.error||'failed');
+  lessons=j.lessons;lsSet(LS_CACHE,lessons);render();
+  setSync('ok','已同步 Google Sheet · '+new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'}));
+  return j;
+}
+async function saveLessons(list){
+  // optimistic local update
+  list.forEach(l=>{const i=lessons.findIndex(x=>x.id===l.id);if(i>=0)lessons[i]=l;else lessons.push(l);});
+  lsSet(LS_CACHE,lessons);render();
+  try{await post({action:'upsert',lessons:list});return true;}
+  catch(e){setSync('err','Google Sheet 沒存到，已先存在這台裝置。按「設定 → 重新同步」再試一次');return false;}
+}
+async function deleteLesson(id){
+  lessons=lessons.filter(l=>l.id!==id);lsSet(LS_CACHE,lessons);render();
+  try{await post({action:'delete',id});}catch(e){setSync('err','刪除沒同步到 Google Sheet，請稍後重新同步');}
+}
+
+/* ---------- render ---------- */
+function render(){
+  const total=lessons.reduce((a,l)=>a+amountOf(l),0);
+  const hours=lessons.reduce((a,l)=>a+(Number(l.hours)||0),0);
+  const ym=today().slice(0,7);
+  $('#s-total').textContent=fmt(total);
+  $('#s-count').textContent=lessons.length+' 堂 · '+(+hours.toFixed(2))+' h';
+  $('#s-month').textContent=fmt(lessons.filter(l=>(l.date||'').startsWith(ym)).reduce((a,l)=>a+amountOf(l),0));
+  const unpaid=lessons.filter(l=>!l.paid).reduce((a,l)=>a+amountOf(l),0);
+  const su=$('#s-unpaid');su.textContent=fmt(unpaid);su.classList.toggle('warn',unpaid>0);
+  const host=$('#lessons');host.querySelectorAll('.month').forEach(n=>n.remove());
+  $('#empty').hidden=lessons.length>0;
+  const groups={};
+  [...lessons].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).forEach(l=>{const k=(l.date||'').slice(0,7)||'未填日期';(groups[k]=groups[k]||[]).push(l);});
+  Object.keys(groups).sort().reverse().forEach(k=>{
+    const arr=groups[k];const sec=document.createElement('div');sec.className='month';
+    const [y,m]=k.split('-');const h=document.createElement('div');h.className='month-h';
+    const h3=document.createElement('h3');h3.textContent=m?`${y} 年 ${Number(m)} 月`:k;
+    const sp=document.createElement('span');sp.textContent=`${arr.length} 堂 · ${fmt(arr.reduce((a,l)=>a+amountOf(l),0))}`;
+    h.append(h3,sp);const list=document.createElement('div');list.className='list';
+    arr.forEach(l=>list.append(row(l)));sec.append(h,list);host.append(sec);
+  });
+}
+function row(l){
+  const el=document.createElement('div');el.className='lesson'+(l.id===editingId?' editing':'');
+  const d=new Date((l.date||today())+'T00:00:00');
+  const date=document.createElement('div');date.className='date';
+  const b=document.createElement('b');b.textContent=String(d.getDate()).padStart(2,'0');
+  const s=document.createElement('span');s.textContent=`${d.getMonth()+1}月 週${WD[d.getDay()]}`;date.append(b,s);
+  const body=document.createElement('div');body.className='body';
+  const t=document.createElement('div');t.className='topic';t.textContent=l.topic||'（未填主題）';body.append(t);
+  const lr=document.createElement('div');lr.className='lrow';
+  [['重點','points'],['閃卡','cards'],['測驗','quiz']].forEach(([lab,tab])=>{const bt=document.createElement('button');bt.type='button';bt.className='btn small study';bt.textContent=lab;bt.onclick=()=>openStudy(l,tab);lr.append(bt);});
+  if(l.notes){
+    const nb=document.createElement('button');nb.type='button';nb.className='btn small';const open=expanded.has(l.id);nb.textContent=open?'收起筆記':'筆記';
+    nb.onclick=()=>{open?expanded.delete(l.id):expanded.add(l.id);render();};lr.append(nb);
+  }
+  body.append(lr);
+  if(l.notes&&expanded.has(l.id)){const n=document.createElement('div');n.className='notes';n.textContent=l.notes;body.append(n);}
+  const meta=document.createElement('div');meta.className='meta';meta.textContent=`${l.hours} h × ${fmt(l.rate)}`;body.append(meta);
+  const right=document.createElement('div');right.className='right';
+  const amt=document.createElement('div');amt.className='amt';amt.textContent=fmt(amountOf(l));
+  const pill=document.createElement('button');pill.type='button';pill.className='pill '+(l.paid?'paid':'unpaid');pill.textContent=l.paid?'已付款':'未付款';
+  pill.onclick=()=>saveLessons([{...l,paid:!l.paid}]);
+  const act=document.createElement('div');act.className='actions';
+  const e=document.createElement('button');e.type='button';e.className='btn small';e.textContent='編輯';e.onclick=()=>startEdit(l);
+  const x=document.createElement('button');x.type='button';x.className='btn small danger';x.textContent='刪除';
+  x.onclick=()=>{if(x.dataset.armed){deleteLesson(l.id);}else{x.dataset.armed='1';x.textContent='確定刪除？';setTimeout(()=>{if(x.isConnected){delete x.dataset.armed;x.textContent='刪除';}},3000);}};
+  act.append(e,x);right.append(amt,pill,act);
+  el.append(date,body,right);return el;
+}
+
+/* ---------- form ---------- */
+function updatePreview(){$('#preview').textContent='本堂 '+fmt((Number($('#f-hours').value)||0)*(Number($('#f-rate').value)||0));}
+['#f-hours','#f-rate'].forEach(s=>$(s).addEventListener('input',updatePreview));
+function startEdit(l){
+  editingId=l.id;$('#f-date').value=l.date||today();$('#f-hours').value=l.hours;$('#f-rate').value=l.rate;
+  $('#f-topic').value=l.topic||'';$('#f-notes').value=l.notes||'';$('#f-paid').checked=!!l.paid;
+  $('#form-title').textContent='編輯這堂課';$('#submit').textContent='儲存修改';$('#cancel').hidden=false;updatePreview();render();
+  $('#add').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function resetForm(){editingId=null;$('#add').reset();$('#f-date').value=today();$('#f-hours').value=1;$('#f-rate').value=1200;$('#f-paid').checked=true;
+  $('#form-title').textContent='新增一堂課';$('#submit').textContent='新增';$('#cancel').hidden=true;updatePreview();render();}
+$('#cancel').onclick=resetForm;
+$('#jump').onclick=()=>{resetForm();$('#add').scrollIntoView({behavior:'smooth'});$('#f-topic').focus();};
+$('#add').addEventListener('submit',async ev=>{
+  ev.preventDefault();
+  const prev=editingId?lessons.find(l=>l.id===editingId):null;
+  const date=$('#f-date').value;if(!date){setStatus('請填日期',true);return;}
+  const notes=$('#f-notes').value.trim();
+  const l={id:editingId||(date+'-'+Math.random().toString(36).slice(2,6)),date,hours:Number($('#f-hours').value)||0,rate:Number($('#f-rate').value)||0,
+    topic:$('#f-topic').value.trim(),notes,paid:$('#f-paid').checked,
+    study:(prev&&prev.study&&prev.notes===notes)?prev.study:null};
+  const was=!!editingId;$('#submit').disabled=true;
+  const ok=await saveLessons([l]);$('#submit').disabled=false;
+  setStatus(was?'已儲存修改':'已新增 '+date+' 的課'+(ok||!sync?'':'（Google Sheet 尚未同步）'),!ok&&!!sync);resetForm();
+});
+
+/* ---------- study sheet ---------- */
+let cur=null;
+function studyOf(l){return (l.study&&l.study.quiz)?l.study:extractStudy(l.notes);}
+function openSheet(title,sub){$('#sh-title').textContent=title;$('#sh-sub').textContent=sub||'';$('#ov').hidden=false;document.body.style.overflow='hidden';}
+function closeSheet(){$('#ov').hidden=true;document.body.style.overflow='';cur=null;}
+$('#sh-x').onclick=closeSheet;$('#ov').addEventListener('click',e=>{if(e.target.id==='ov')closeSheet();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#ov').hidden)closeSheet();});
+function tabs(list,on,fn){const t=$('#sh-tabs');t.hidden=!list.length;t.innerHTML='';list.forEach(([k,lab])=>{const b=document.createElement('button');b.type='button';b.className='tab'+(k===on?' on':'');b.textContent=lab;b.onclick=()=>fn(k);t.append(b);});}
+
+function openStudy(l,tab){
+  const s=studyOf(l);cur={l,s,tab};
+  const d=new Date(l.date+'T00:00:00');
+  openSheet(`${d.getMonth()+1}/${d.getDate()} ${l.topic||'課堂複習'}`,s.auto?'這堂課還沒有整理好的複習包，以下是從筆記自動抓出來的。':'');
+  showTab(tab);
+}
+function showTab(tab){
+  cur.tab=tab;tabs([['points','重點'],['cards','閃卡'],['quiz','測驗']],tab,showTab);
+  const b=$('#sh-b');b.innerHTML='';b.scrollTop=0;const s=cur.s;
+  if(tab==='points'){
+    if(s.points&&s.points.length){const h=document.createElement('p');h.className='h4';h.textContent='課堂重點';const ul=document.createElement('ul');ul.className='points';s.points.forEach(p=>{const li=document.createElement('li');li.textContent=p;ul.append(li);});b.append(h,ul);}
+    if(s.vocab&&s.vocab.length){const h=document.createElement('p');h.className='h4';h.textContent='單字與片語';const g=document.createElement('div');g.className='vocab';s.vocab.forEach(v=>{const a=document.createElement('div');a.className='en';a.textContent=v.en;const z=document.createElement('div');z.className='zh';z.textContent=v.zh;g.append(a,z);});b.append(h,g);}
+    if(!(s.points||[]).length&&!(s.vocab||[]).length){const p=document.createElement('p');p.className='note';p.textContent='這堂課的筆記裡抓不到單字或重點句。';b.append(p);}
+  }else if(tab==='cards'){cardsView(b,s.cards||[]);}
+  else quizView(b,s.quiz||[]);
+}
+function cardsView(b,cards){
+  if(!cards.length){const p=document.createElement('p');p.className='note';p.textContent='這堂課沒有中英對照句可以做成閃卡。';b.append(p);return;}
+  let deck=shuffle(cards),i=0,flip=false;
+  const card=document.createElement('div');card.className='card';card.tabIndex=0;card.setAttribute('role','button');
+  const nav=document.createElement('div');nav.className='cardnav';
+  const prev=document.createElement('button');prev.className='btn';prev.type='button';prev.textContent='上一張';
+  const cnt=document.createElement('span');cnt.className='count';
+  const next=document.createElement('button');next.className='btn primary';next.type='button';next.textContent='下一張';
+  nav.append(prev,cnt,next);
+  const tip=document.createElement('p');tip.className='note';tip.textContent='先看中文，自己用英文說出來，再點卡片看答案。';
+  function draw(){const c=deck[i];card.innerHTML='';const z=document.createElement('div');z.className='zh';z.textContent=c.zh;card.append(z);
+    if(flip){const e=document.createElement('div');e.className='en';e.textContent=c.en;card.append(e);}else{const h=document.createElement('div');h.className='hint';h.textContent='點一下看英文';card.append(h);}
+    cnt.textContent=`${i+1} / ${deck.length}`;prev.disabled=i===0;next.textContent=i===deck.length-1?'重新洗牌':'下一張';}
+  card.onclick=()=>{flip=!flip;draw();};card.onkeydown=e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();card.onclick();}};
+  prev.onclick=()=>{if(i>0){i--;flip=false;draw();}};
+  next.onclick=()=>{if(i<deck.length-1)i++;else{deck=shuffle(cards);i=0;}flip=false;draw();};
+  b.append(tip,card,nav);draw();
+}
+function quizView(b,quiz){
+  if(!quiz.length){const p=document.createElement('p');p.className='note';p.textContent='這堂課的筆記不夠做測驗題。';b.append(p);return;}
+  let i=0,score=0;const qs=quiz;
+  function draw(){
+    b.innerHTML='';
+    if(i>=qs.length){const sc=document.createElement('div');sc.className='score';sc.textContent=`${score} / ${qs.length}`;
+      const p=document.createElement('p');p.className='note';p.style.textAlign='center';p.textContent=score===qs.length?'全對！這堂課掌握得很好。':'錯的題目可以回「重點」和「閃卡」再看一次。';
+      const again=document.createElement('button');again.className='btn primary';again.type='button';again.textContent='再做一次';again.onclick=()=>{i=0;score=0;draw();};
+      b.append(sc,p,again);return;}
+    const q=qs[i];const c=document.createElement('div');c.className='count';c.textContent=`第 ${i+1} 題 / 共 ${qs.length} 題`+(q.from?' · '+q.from:'');
+    const qt=document.createElement('div');qt.className='q';qt.textContent=q.q;
+    const opts=document.createElement('div');opts.className='opts';
+    const ex=document.createElement('div');ex.className='explain';ex.hidden=true;
+    const nx=document.createElement('button');nx.className='btn primary';nx.type='button';nx.hidden=true;nx.textContent=i===qs.length-1?'看分數':'下一題';nx.onclick=()=>{i++;draw();};
+    q.options.forEach((o,k)=>{const bt=document.createElement('button');bt.type='button';bt.className='opt';bt.textContent=String.fromCharCode(65+k)+'. '+o;
+      bt.onclick=()=>{if(opts.dataset.done)return;opts.dataset.done='1';
+        if(k===q.answer){score++;bt.classList.add('right');}else{bt.classList.add('wrong');opts.children[q.answer].classList.add('right');}
+        ex.textContent=(k===q.answer?'答對了。':'正確答案是 '+String.fromCharCode(65+q.answer)+'。')+(q.explain?' '+q.explain:'');ex.hidden=false;nx.hidden=false;};
+      opts.append(bt);});
+    b.append(c,qt,opts,ex,nx);
+  }
+  draw();
+}
+$('#mix').onclick=()=>{
+  const all=[];lessons.forEach(l=>{const s=studyOf(l);(s.quiz||[]).forEach(q=>all.push({...q,from:l.date.slice(5).replace('-','/')}));});
+  openSheet('綜合測驗','從所有課程隨機抽 10 題');tabs([],'',()=>{});
+  const b=$('#sh-b');b.innerHTML='';quizView(b,shuffle(all).slice(0,10));
+};
+
+/* ---------- settings ---------- */
+$('#gear').onclick=()=>{
+  openSheet('設定','');tabs([],'',()=>{});const b=$('#sh-b');b.innerHTML='';
+  const s1=document.createElement('div');s1.className='setting';
+  s1.innerHTML='<b>Google Sheet 後端</b>';
+  const st=document.createElement('p');st.className='note';st.textContent=sync?'已連線。每次新增、修改、刪除都會存到 Google Sheet。':'尚未連線。請用 Claude 給你的連線網址打開一次這個頁面。';
+  s1.append(st);
+  if(sync){
+    const r=document.createElement('div');r.className='actions';
+    const re=document.createElement('button');re.className='btn';re.type='button';re.textContent='重新同步';re.onclick=async()=>{await pull();toast('已重新同步');};
+    r.append(re);
+    if(sync.sheet){const a=document.createElement('a');a.className='btn';a.href=sync.sheet;a.target='_blank';a.rel='noopener';a.textContent='打開 Google Sheet';a.style.textDecoration='none';r.append(a);}
+    s1.append(r);
+  }
+  const s2=document.createElement('div');s2.className='setting';s2.innerHTML='<b>匯入課程</b><p class="note">選一個 .json 檔（Claude 整理好的課程與複習包），相同日期的課會被更新。</p>';
+  const fi=document.createElement('input');fi.type='file';fi.accept='.json,application/json';fi.id='import';
+  fi.onchange=async()=>{const f=fi.files[0];if(!f)return;try{const arr=JSON.parse(await f.text());if(!Array.isArray(arr))throw 0;
+      toast('匯入中…');const ok=await saveLessons(arr.filter(x=>x&&x.id&&x.date));toast(ok||!sync?`已匯入 ${arr.length} 堂課`:'已存在這台裝置，Google Sheet 沒存到');}
+    catch(e){toast('這個檔案讀不懂，請確認是 .json 課程檔');}};
+  s2.append(fi);
+  const s3=document.createElement('div');s3.className='setting';s3.innerHTML='<b>加到主畫面</b><p class="note">用 Safari 打開，點分享 → 加入主畫面，就能像 App 一樣使用。</p>';
+  b.append(s1,s2,s3);
+};
+
+/* ---------- boot ---------- */
+readHash();
+sync=sync||lsGet(LS_SYNC);
+lessons=lsGet(LS_CACHE)||[];
+$('#f-date').value=today();updatePreview();render();pull();
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')pull();});
+</script>
+</body>
+</html>
