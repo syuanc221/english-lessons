@@ -584,7 +584,7 @@ async function makeClaimImage(c){
   const lt=ls.reduce((a,l)=>a+amountOf(l),0), pt=ps.reduce((a,p)=>a+(Number(p.amount)||0),0);
   const canvas=await renderStatement({title:'英語家教學費報帳明細',subtitle:`期間 ${zhDate(c.from)} – ${zhDate(c.to)} · 1 對 1 線上英語家教（Google Meet）· 每堂 1 小時 NT$1,200`,
     sections:[
-      {title:`上課紀錄（${ls.length} 堂）`,rows:ls.map(l=>[zhDate(l.date),l.topic||'英語會話',fmt(amountOf(l))]),total:['課程小計',fmt(lt)]},
+      {title:`上課紀錄（${ls.length} 堂）`,rows:ls.map(l=>[zhDate(l.date),`線上英語課 ${Number(l.hours)||1} 小時`,fmt(amountOf(l))]),total:['課程小計',fmt(lt)]},
       {title:`付款紀錄（${ps.length} 筆）`,rows:ps.map(p=>[zhDate(p.date),p.note||'LINE Pay 轉帳',fmt(p.amount)]),total:['付款小計',fmt(pt)]}],
     foot:[`申請金額：${fmt(c.twd)} ≈ ${usd(c.usd)}（匯率 ${c.rate} TWD/USD）`,'付款方式：LINE Pay 轉帳給家教老師；私人家教無發票，附上對話與轉帳截圖為證。',`製表日期 ${zhDate(today())}`]});
   downloadCanvas(canvas,`英語家教_報帳明細_${c.from}_${c.to}.png`);
