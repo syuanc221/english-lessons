@@ -164,6 +164,19 @@ textarea{resize:vertical;min-height:120px}
 .mono{font-family:var(--f-mono);font-size:12px;word-break:break-all;color:var(--muted)}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:999px;font-size:14px;z-index:20}
 @media (prefers-reduced-motion:no-preference){.overlay .sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
+/* bottom tab bar + views + speech + sfx */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;justify-content:center;gap:4px;padding:6px 12px calc(6px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:1px solid var(--line)}
+.tabbar button{flex:1;max-width:150px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0 4px;border:0;background:none;color:var(--muted);font-family:inherit;font-size:11px;font-weight:500;line-height:1;border-radius:12px;cursor:pointer}
+.tabbar svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabbar button[aria-selected="true"]{color:var(--ink)}
+.wrap{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+body[data-view="lessons"] #paysec,body[data-view="lessons"] #claimsec,body[data-view="pay"] #add,body[data-view="pay"] #lessons,body[data-view="pay"] #claimsec,body[data-view="claim"] .stats,body[data-view="claim"] #add,body[data-view="claim"] #lessons,body[data-view="claim"] #paysec{display:none}
+.spk{display:inline-flex;align-items:center;justify-content:center;flex:none;width:28px;height:28px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;vertical-align:middle;padding:0}
+.spk svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.spk.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.points li>span,.vocab .en>span{flex:1}
+.points li,.vocab .en{display:flex;align-items:center;gap:8px}
+.card .en{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;width:100%}
 </style>
 </head>
 <body>
@@ -224,6 +237,11 @@ textarea{resize:vertical;min-height:120px}
   <section id="lessons" aria-label="上課紀錄">
     <div class="empty" id="empty"><b>還沒有上課紀錄</b>連上 Google Sheet 後會自動載入；或在上面填日期和筆記，按「新增」。</div>
   </section>
+  <nav class="tabbar" aria-label="主選單">
+    <button type="button" data-view="lessons"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5V5.5M8 7h8M8 11h6"/></svg>上課</button>
+    <button type="button" data-view="pay"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2.5"/><path d="M3 10h18M7 14.5h3"/></svg>付款</button>
+    <button type="button" data-view="claim"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>報帳</button>
+  </nav>
 </div>
 
 <div class="overlay" id="ov" hidden>
@@ -667,6 +685,83 @@ sync=sync||lsGet(LS_SYNC);
 lessons=lsGet(LS_CACHE)||[];payments=lsGet(LS_PAY)||[];claims=lsGet(LS_CLAIM)||[];
 $('#f-date').value=today();updatePreview();render();pull();
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')pull();});
+/* ---------- bottom menu ---------- */
+(function(){const KEY='eng-lessons-view';const bar=document.querySelector('.tabbar');if(!bar)return;
+  function setView(v){document.body.dataset.view=v;bar.querySelectorAll('button').forEach(b=>b.setAttribute('aria-selected',b.dataset.view===v));try{localStorage.setItem(KEY,v)}catch(e){}}
+  bar.addEventListener('click',e=>{const b=e.target.closest('button[data-view]');if(b){setView(b.dataset.view);window.scrollTo({top:0,behavior:'smooth'});}});
+  let v='lessons';try{v=localStorage.getItem(KEY)||v}catch(e){}setView(v);
+  $('#jump').addEventListener('click',()=>setView('lessons'),true);
+})();
+/* ---------- speech (Web Speech API) ---------- */
+let voiceEn=null;
+function pickVoice(){const vs=speechSynthesis.getVoices();voiceEn=vs.find(v=>/^en[-_]US/i.test(v.lang)&&/Samantha|Ava|Allison|Google US/i.test(v.name))||vs.find(v=>/^en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null;}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+function speak(text,btn){if(!('speechSynthesis' in window)){toast('這個瀏覽器不支援語音');return;}
+  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';if(voiceEn)u.voice=voiceEn;u.rate=0.92;
+  document.querySelectorAll('.spk.on').forEach(b=>b.classList.remove('on'));
+  if(btn){btn.classList.add('on');u.onend=u.onerror=()=>btn.classList.remove('on');}
+  speechSynthesis.speak(u);}
+function spkBtn(text){const b=document.createElement('button');b.type='button';b.className='spk';b.title='播放發音';b.setAttribute('aria-label','播放 '+text);
+  b.innerHTML='<svg viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 19V5L7.5 9.5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+  b.onclick=e=>{e.stopPropagation();speak(text,b);};return b;}
+/* ---------- sound effects (WebAudio) ---------- */
+let actx=null;
+function sfx(ok){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();const t=actx.currentTime;
+  const play=(f,t0,d,type,g)=>{const o=actx.createOscillator(),v=actx.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t0);v.gain.setValueAtTime(0.0001,t0);v.gain.exponentialRampToValueAtTime(g||0.18,t0+0.01);v.gain.exponentialRampToValueAtTime(0.0001,t0+d);o.connect(v).connect(actx.destination);o.start(t0);o.stop(t0+d+0.02);};
+  if(ok){play(880,t,0.12);play(1320,t+0.11,0.24);}else{play(220,t,0.22,'triangle',0.2);play(170,t+0.13,0.32,'triangle',0.2);}}catch(e){}}
+/* ---------- study views with speech ---------- */
+showTab=function(tab){
+  cur.tab=tab;tabs([['points','重點'],['cards','閃卡'],['quiz','測驗']],tab,showTab);
+  const b=$('#sh-b');b.innerHTML='';b.scrollTop=0;const s=cur.s;
+  if(tab==='points'){
+    if(s.points&&s.points.length){const h=document.createElement('p');h.className='h4';h.textContent='課堂重點';const ul=document.createElement('ul');ul.className='points';s.points.forEach(p=>{const li=document.createElement('li');const sp=document.createElement('span');sp.textContent=p;li.append(sp,spkBtn(p));ul.append(li);});b.append(h,ul);}
+    if(s.vocab&&s.vocab.length){const h=document.createElement('p');h.className='h4';h.textContent='單字與片語';const g=document.createElement('div');g.className='vocab';s.vocab.forEach(v=>{const a=document.createElement('div');a.className='en';const sp=document.createElement('span');sp.textContent=v.en;a.append(sp,spkBtn(v.en));const z=document.createElement('div');z.className='zh';z.textContent=v.zh;g.append(a,z);});b.append(h,g);}
+    if(!(s.points||[]).length&&!(s.vocab||[]).length){const p=document.createElement('p');p.className='note';p.textContent='這堂課的筆記裡抓不到單字或重點句。';b.append(p);}
+  }else if(tab==='cards'){cardsView(b,s.cards||[]);}
+  else quizView(b,s.quiz||[]);
+};
+cardsView=function(b,cards){
+  if(!cards.length){const p=document.createElement('p');p.className='note';p.textContent='這堂課沒有中英對照句可以做成閃卡。';b.append(p);return;}
+  let deck=shuffle(cards),i=0,flip=false;
+  const card=document.createElement('div');card.className='card';card.tabIndex=0;card.setAttribute('role','button');
+  const nav=document.createElement('div');nav.className='cardnav';
+  const prev=document.createElement('button');prev.className='btn';prev.type='button';prev.textContent='上一張';
+  const cnt=document.createElement('span');cnt.className='count';
+  const next=document.createElement('button');next.className='btn primary';next.type='button';next.textContent='下一張';
+  nav.append(prev,cnt,next);
+  const tip=document.createElement('p');tip.className='note';tip.textContent='先看中文，自己用英文說出來，再點卡片看答案並聽發音。';
+  function draw(){const c=deck[i];card.innerHTML='';const z=document.createElement('div');z.className='zh';z.textContent=c.zh;card.append(z);
+    if(flip){const e=document.createElement('div');e.className='en';const sp=document.createElement('span');sp.textContent=c.en;const bt=spkBtn(c.en);e.append(sp,bt);card.append(e);speak(c.en,bt);}
+    else{const h=document.createElement('div');h.className='hint';h.textContent='點一下看英文、聽發音';card.append(h);}
+    cnt.textContent=`${i+1} / ${deck.length}`;prev.disabled=i===0;next.textContent=i===deck.length-1?'重新洗牌':'下一張';}
+  card.onclick=()=>{flip=!flip;draw();};card.onkeydown=e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();card.onclick();}};
+  prev.onclick=()=>{if(i>0){i--;flip=false;draw();}};
+  next.onclick=()=>{if(i<deck.length-1)i++;else{deck=shuffle(cards);i=0;}flip=false;draw();};
+  b.append(tip,card,nav);draw();
+};
+quizView=function(b,quiz){
+  if(!quiz.length){const p=document.createElement('p');p.className='note';p.textContent='這堂課的筆記不夠做測驗題。';b.append(p);return;}
+  let i=0,score=0;const qs=quiz;
+  function draw(){
+    b.innerHTML='';
+    if(i>=qs.length){const sc=document.createElement('div');sc.className='score';sc.textContent=`${score} / ${qs.length}`;
+      const p=document.createElement('p');p.className='note';p.style.textAlign='center';p.textContent=score===qs.length?'全對！這堂課掌握得很好。':'錯的題目可以回「重點」和「閃卡」再看一次。';
+      const again=document.createElement('button');again.className='btn primary';again.type='button';again.textContent='再做一次';again.onclick=()=>{i=0;score=0;draw();};
+      b.append(sc,p,again);return;}
+    const q=qs[i];const c=document.createElement('div');c.className='count';c.textContent=`第 ${i+1} 題 / 共 ${qs.length} 題`+(q.from?' · '+q.from:'');
+    const qt=document.createElement('div');qt.className='q';qt.textContent=q.q;
+    const opts=document.createElement('div');opts.className='opts';
+    const ex=document.createElement('div');ex.className='explain';ex.hidden=true;
+    const nx=document.createElement('button');nx.className='btn primary';nx.type='button';nx.hidden=true;nx.textContent=i===qs.length-1?'看分數':'下一題';nx.onclick=()=>{i++;draw();};
+    q.options.forEach((o,k)=>{const bt=document.createElement('button');bt.type='button';bt.className='opt';bt.textContent=String.fromCharCode(65+k)+'. '+o;
+      bt.onclick=()=>{if(opts.dataset.done)return;opts.dataset.done='1';const ok=k===q.answer;sfx(ok);
+        if(ok){score++;bt.classList.add('right');}else{bt.classList.add('wrong');opts.children[q.answer].classList.add('right');}
+        ex.textContent=(ok?'答對了。':'正確答案是 '+String.fromCharCode(65+q.answer)+'。')+(q.explain?' '+q.explain:'');ex.hidden=false;nx.hidden=false;};
+      opts.append(bt);});
+    b.append(c,qt,opts,ex,nx);
+  }
+  draw();
+};
 </script>
 </body>
 </html>
