@@ -177,6 +177,38 @@ body[data-view="lessons"] #paysec,body[data-view="lessons"] #claimsec,body[data-
 .points li>span,.vocab .en>span{flex:1}
 .points li,.vocab .en{display:flex;align-items:center;gap:8px}
 .card .en{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;width:100%}
+/* duolingo-style quiz */
+.qz-top{display:flex;align-items:center;gap:12px}
+.qz-bar{flex:1;height:10px;background:var(--tile);border-radius:999px;overflow:hidden}
+.qz-bar i{display:block;height:100%;background:var(--ink);border-radius:999px;transition:width .35s cubic-bezier(.2,.8,.2,1)}
+.qz-streak{font-family:var(--f-mono);font-size:13px;color:var(--muted);white-space:nowrap}
+.qz-streak.hot{color:var(--ink);font-weight:600}
+.qz-q{font-size:19px;font-weight:600;line-height:1.45;display:flex;gap:10px;align-items:flex-start}
+.qz-q>span{flex:1}
+.qz-opts{display:grid;gap:10px}
+.qz-opt{font:inherit;font-size:16px;text-align:left;border:2px solid var(--line);background:var(--paper);color:var(--ink);border-radius:14px;padding:13px 14px;cursor:pointer;display:flex;gap:12px;align-items:center;transition:transform .12s,border-color .15s,background .15s}
+.qz-opt b{flex:none;width:28px;height:28px;border-radius:8px;border:1.5px solid var(--line);display:grid;place-items:center;font-family:var(--f-mono);font-size:13px;font-weight:600;color:var(--muted)}
+.qz-opt:active{transform:scale(.98)}
+.qz-opt.is-right{border-color:var(--ok);background:var(--ok-soft);animation:pop .35s}
+.qz-opt.is-right b{border-color:var(--ok);background:var(--ok);color:#fff}
+.qz-opt.is-wrong{border-color:var(--warn);background:var(--warn-soft);animation:shake .4s}
+.qz-opt.is-wrong b{border-color:var(--warn);background:var(--warn);color:#fff}
+.qz-opt.dim{opacity:.45}
+.qz-foot{position:sticky;bottom:-16px;margin:6px -16px -16px;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--paper);display:grid;gap:10px;animation:up .25s ease-out}
+.qz-foot.ok{background:var(--ok-soft);border-color:transparent}
+.qz-foot.bad{background:var(--warn-soft);border-color:transparent}
+.qz-foot .t{font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px}
+.qz-foot.ok .t{color:var(--ok)}.qz-foot.bad .t{color:var(--warn)}
+.qz-foot .e{font-size:14px;color:var(--ink);opacity:.85}
+.qz-foot .go{font:inherit;font-weight:600;font-size:15px;border:0;border-radius:999px;padding:12px;cursor:pointer;background:var(--ink);color:var(--bg)}
+.qz-end{text-align:center;display:grid;gap:10px;padding:12px 0 4px;position:relative}
+.qz-end .big{font-family:var(--f-display);font-size:56px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.qz-end .pct{font-family:var(--f-mono);color:var(--muted)}
+.qz-end .msg{font-size:16px;font-weight:600}
+.qz-end .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+.qz-confetti{position:absolute;inset:-16px;width:calc(100% + 32px);height:calc(100% + 32px);pointer-events:none}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.04)}100%{transform:scale(1)}}
 </style>
 </head>
 <body>
@@ -741,24 +773,52 @@ cardsView=function(b,cards){
 };
 quizView=function(b,quiz){
   if(!quiz.length){const p=document.createElement('p');p.className='note';p.textContent='這堂課的筆記不夠做測驗題。';b.append(p);return;}
-  let i=0,score=0;const qs=quiz;
+  let qs=quiz.slice(),i=0,score=0,streak=0,best=0;const wrongs=[];
+  const praise=['太棒了！','答對了！','漂亮！','就是這個！','Nice one!','完美！'];
+  const isEn=t=>(t.match(/[A-Za-z]/g)||[]).length>(t.match(/[㐀-鿿]/g)||[]).length;
+  function confetti(host){const c=document.createElement('canvas');c.className='qz-confetti';host.append(c);const g=c.getContext('2d');const W=c.width=host.clientWidth+32,H=c.height=host.clientHeight+32;
+    const cols=['#111','#555','#999','#ccc','#fff'];const ps=Array.from({length:70},()=>({x:W/2+(Math.random()-.5)*60,y:H*0.35,vx:(Math.random()-.5)*9,vy:-Math.random()*9-4,r:4+Math.random()*4,a:Math.random()*6,va:(Math.random()-.5)*.4,c:cols[Math.random()*cols.length|0]}));
+    let t0=performance.now();(function frame(now){const dt=Math.min(32,now-t0)/16;t0=now;g.clearRect(0,0,W,H);let alive=0;ps.forEach(p=>{p.vy+=.35*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.a+=p.va*dt;if(p.y<H+20){alive++;g.save();g.translate(p.x,p.y);g.rotate(p.a);g.fillStyle=p.c;g.strokeStyle='#111';g.lineWidth=1;g.fillRect(-p.r,-p.r*.6,p.r*2,p.r*1.2);g.strokeRect(-p.r,-p.r*.6,p.r*2,p.r*1.2);g.restore();}});if(alive&&c.isConnected)requestAnimationFrame(frame);else c.remove();})(t0);}
+  function end(){
+    b.innerHTML='';const box=document.createElement('div');box.className='qz-end';
+    const pct=Math.round(score/qs.length*100);
+    const big=document.createElement('div');big.className='big';big.textContent=`${score} / ${qs.length}`;
+    const pc=document.createElement('div');pc.className='pct';pc.textContent=`${pct}% 正確 · 最高連對 ${best}`;
+    const m=document.createElement('div');m.className='msg';m.textContent=pct===100?'全對！這堂課完全掌握了 🎉':pct>=80?'很好！只差一點點就全對了':pct>=50?'不錯，錯的再複習一下就穩了':'沒關係，回「重點」和「閃卡」看一遍再來';
+    const row=document.createElement('div');row.className='row';
+    const again=document.createElement('button');again.className='btn primary';again.type='button';again.textContent='再來一次';again.onclick=()=>{qs=quiz.slice();i=0;score=0;streak=0;best=0;wrongs.length=0;draw();};
+    row.append(again);
+    if(wrongs.length){const w=document.createElement('button');w.className='btn';w.type='button';w.textContent=`只練錯的 ${wrongs.length} 題`;w.onclick=()=>{qs=wrongs.slice();i=0;score=0;streak=0;best=0;wrongs.length=0;draw();};row.append(w);}
+    box.append(big,pc,m,row);b.append(box);
+    if(pct>=80){sfx(true);setTimeout(()=>sfx(true),180);confetti(box);}
+  }
   function draw(){
     b.innerHTML='';
-    if(i>=qs.length){const sc=document.createElement('div');sc.className='score';sc.textContent=`${score} / ${qs.length}`;
-      const p=document.createElement('p');p.className='note';p.style.textAlign='center';p.textContent=score===qs.length?'全對！這堂課掌握得很好。':'錯的題目可以回「重點」和「閃卡」再看一次。';
-      const again=document.createElement('button');again.className='btn primary';again.type='button';again.textContent='再做一次';again.onclick=()=>{i=0;score=0;draw();};
-      b.append(sc,p,again);return;}
-    const q=qs[i];const c=document.createElement('div');c.className='count';c.textContent=`第 ${i+1} 題 / 共 ${qs.length} 題`+(q.from?' · '+q.from:'');
-    const qt=document.createElement('div');qt.className='q';qt.textContent=q.q;
-    const opts=document.createElement('div');opts.className='opts';
-    const ex=document.createElement('div');ex.className='explain';ex.hidden=true;
-    const nx=document.createElement('button');nx.className='btn primary';nx.type='button';nx.hidden=true;nx.textContent=i===qs.length-1?'看分數':'下一題';nx.onclick=()=>{i++;draw();};
-    q.options.forEach((o,k)=>{const bt=document.createElement('button');bt.type='button';bt.className='opt';bt.textContent=String.fromCharCode(65+k)+'. '+o;
+    if(i>=qs.length){end();return;}
+    const q=qs[i];
+    const top=document.createElement('div');top.className='qz-top';
+    const bar=document.createElement('div');bar.className='qz-bar';const fill=document.createElement('i');fill.style.width=(i/qs.length*100)+'%';bar.append(fill);
+    const st=document.createElement('span');st.className='qz-streak'+(streak>=3?' hot':'');st.textContent=streak>=2?`🔥 ${streak} 連對`:`${i+1} / ${qs.length}`;
+    top.append(bar,st);
+    const qt=document.createElement('div');qt.className='qz-q';const qs_=document.createElement('span');qs_.textContent=q.q;qt.append(qs_);if(isEn(q.q))qt.append(spkBtn(q.q));
+    const opts=document.createElement('div');opts.className='qz-opts';
+    const foot=document.createElement('div');foot.className='qz-foot';foot.hidden=true;
+    q.options.forEach((o,k)=>{const bt=document.createElement('button');bt.type='button';bt.className='qz-opt';const badge=document.createElement('b');badge.textContent=String.fromCharCode(65+k);const tx=document.createElement('span');tx.textContent=o;bt.append(badge,tx);
       bt.onclick=()=>{if(opts.dataset.done)return;opts.dataset.done='1';const ok=k===q.answer;sfx(ok);
-        if(ok){score++;bt.classList.add('right');}else{bt.classList.add('wrong');opts.children[q.answer].classList.add('right');}
-        ex.textContent=(ok?'答對了。':'正確答案是 '+String.fromCharCode(65+q.answer)+'。')+(q.explain?' '+q.explain:'');ex.hidden=false;nx.hidden=false;};
+        [...opts.children].forEach((c,j)=>{if(j!==k&&j!==q.answer)c.classList.add('dim');});
+        if(ok){score++;streak++;best=Math.max(best,streak);bt.classList.add('is-right');}
+        else{streak=0;wrongs.push(q);bt.classList.add('is-wrong');opts.children[q.answer].classList.add('is-right');}
+        fill.style.width=((i+1)/qs.length*100)+'%';
+        const ans=q.options[q.answer];
+        foot.className='qz-foot '+(ok?'ok':'bad');foot.innerHTML='';
+        const t=document.createElement('div');t.className='t';t.textContent=ok?(streak>=3?`🔥 ${streak} 連對！${praise[i%praise.length]}`:praise[(i*7+score)%praise.length]):'正確答案：'+ans;
+        const e=document.createElement('div');e.className='e';e.textContent=q.explain||'';if(!q.explain)e.hidden=true;
+        const go=document.createElement('button');go.className='go';go.type='button';go.textContent=i===qs.length-1?'看結果':'繼續';go.onclick=()=>{i++;draw();};
+        foot.append(t,e,go);foot.hidden=false;
+        if(isEn(ans))setTimeout(()=>speak(ans),ok?250:600);
+        setTimeout(()=>go.focus(),50);};
       opts.append(bt);});
-    b.append(c,qt,opts,ex,nx);
+    b.append(top,qt,opts,foot);
   }
   draw();
 };
